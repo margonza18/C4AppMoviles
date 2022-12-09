@@ -17,19 +17,30 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="250dp"
             android:background="@color/Azul"
             android:orientation="vertical">
 
+            <de.hdodenhof.circleimageview.CircleImageView
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_return_black"
+                app:civ_border_width="3dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="15dp"
+                app:civ_border_color="#FF000000"
+                android:id="@+id/CirleImageViewBackPost"/>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="23dp"
+                android:layout_marginTop="10dp"
                 android:text="CREAR PUBLICACION"
                 android:textAlignment="center"
                 android:textColor="@color/white"
                 android:textSize="18sp"
                 android:textStyle="bold" />
+
 
             <LinearLayout
                 android:layout_width="match_parent"
