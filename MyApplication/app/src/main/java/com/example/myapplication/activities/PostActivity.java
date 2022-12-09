@@ -50,6 +50,7 @@ public class PostActivity extends AppCompatActivity {
     private final int Gallery_REQUEST_CODE=1;
     private final int Gallery_REQUEST_CODE2=2;
     private final int PHOTO_REQUEST_CODE=3;
+    private final int PHOTO_REQUEST_CODE2=4;
     Button mbtnPost;
     ImageProviders mImageProvider;
 
@@ -77,6 +78,11 @@ public class PostActivity extends AppCompatActivity {
     String mAbsolutePhotoPatch;
     String mPhotoPatch;
     File mPhotoFile;
+
+    //Fotografia 2
+    String mAbsolutePhotoPatch2;
+    String mPhotoPatch2;
+    File mPhotoFile2;
 
 
     @Override
@@ -134,14 +140,14 @@ public class PostActivity extends AppCompatActivity {
         mImageViewPost1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectOptionImage(Gallery_REQUEST_CODE);
+                selectOptionImage(1);
                // openGallery(Gallery_REQUEST_CODE);
             }
         });
         mImageViewPost2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectOptionImage(Gallery_REQUEST_CODE2);
+                selectOptionImage(2);
                 //openGallery(Gallery_REQUEST_CODE2);
             }
         });
@@ -196,14 +202,24 @@ public class PostActivity extends AppCompatActivity {
 
     }
 //el DialogInterface es un evento donde el usuario tiene que elegir entre las opciones dando click
-    private void selectOptionImage(int requestCode) {
+    private void selectOptionImage(int numberImage) {
         mBuilderSelector.setItems(options, new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
+            public void onClick(DialogInterface dialogInterface, int which) {
                 if (which ==0){
-                    openGallery(requestCode);
-                }else if (which==1){
-                    takePhoto();
+                    if(numberImage==1){
+                        openGallery(Gallery_REQUEST_CODE);
+                    }else if(numberImage==2){
+                        openGallery(Gallery_REQUEST_CODE2);
+                    }
+                }
+                else if (which==1){
+                    if (numberImage==1){
+                        takePhoto(PHOTO_REQUEST_CODE);
+                    }else if(numberImage==2) {
+                        takePhoto(PHOTO_REQUEST_CODE2);
+                    }
+
                 }
 
             }
@@ -211,28 +227,28 @@ public class PostActivity extends AppCompatActivity {
         mBuilderSelector.show();
     }
 
-    private void takePhoto() {
+    private void takePhoto(int requestCode) {
        // Toast.makeText(this, "Tomar Foto", Toast.LENGTH_SHORT).show();
 
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager())!=null){
             File photoFile=null;
             try {
-                photoFile= createPhotoFile();
+                photoFile= createPhotoFile(requestCode);
             }catch (Exception e){
                 Toast.makeText(this, "Hubo un error con el archivo"+ e.getMessage(), Toast.LENGTH_SHORT).show();
             }
             if (photoFile != null){
                 Uri photoUri = FileProvider.getUriForFile(PostActivity.this, "com.example.myapplication",photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                startActivityForResult(takePictureIntent, PHOTO_REQUEST_CODE);
+                startActivityForResult(takePictureIntent, requestCode);
             }
 
         }
 
     }
 
-    private File createPhotoFile() throws IOException {
+    private File createPhotoFile(int requestCode) throws IOException {
 
         File storageDir= getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File photoFile = File.createTempFile(
@@ -240,8 +256,14 @@ public class PostActivity extends AppCompatActivity {
               ".jpg",
               storageDir
         );
-        mPhotoPatch="File:  "+ photoFile.getAbsolutePath();
-        mAbsolutePhotoPatch= photoFile.getAbsolutePath();
+        if (requestCode==PHOTO_REQUEST_CODE){
+            mPhotoPatch="File:"+ photoFile.getAbsolutePath();
+            mAbsolutePhotoPatch= photoFile.getAbsolutePath();
+        }else if (requestCode==PHOTO_REQUEST_CODE2){
+            mPhotoPatch2="File:"+ photoFile.getAbsolutePath();
+            mAbsolutePhotoPatch2= photoFile.getAbsolutePath();
+        }
+
         return photoFile;
 
     }
@@ -250,9 +272,19 @@ public class PostActivity extends AppCompatActivity {
         mTitle=mTextInputTitle.getText().toString();
         mDescription=mTextInputDescription.getText().toString();
         if(!mTitle.isEmpty() && !mDescription.isEmpty() && !mCategoria.isEmpty()){
-            if(mImageFile !=null){
+            //Ambas IMG de galeria
+            if(mImageFile !=null && mImageFile2 !=null){
                 saveImage(mImageFile,mImageFile2);
-            }else {
+                //Ambas IMG de camara
+            }else if (mPhotoFile !=null && mPhotoFile2 !=null){
+                saveImage(mPhotoFile,mPhotoFile2);
+                //una IMG de galeria y una IMG de camara
+            }else if (mImageFile !=null && mPhotoFile !=null){
+                saveImage(mImageFile,mPhotoFile);
+            }else if (mPhotoFile2 !=null && mImageFile2 !=null){
+                saveImage(mPhotoFile2,mImageFile2);
+            }
+            else {
                 Toast.makeText(this, "Selecciona una imagen", Toast.LENGTH_SHORT).show();
             }
         }else {
@@ -353,6 +385,7 @@ public class PostActivity extends AppCompatActivity {
         /* VALIDACION DE IMAGEN CON GALERIA */
         if (requestCode == Gallery_REQUEST_CODE && resultCode == RESULT_OK) {
             try {
+                mPhotoFile=null;
                 mImageFile = FileUtil.from(this, data.getData());
                 mImageViewPost1.setImageBitmap(BitmapFactory.decodeFile(mImageFile.getAbsolutePath()));
             } catch (Exception e) {
@@ -362,6 +395,7 @@ public class PostActivity extends AppCompatActivity {
         }
         if (requestCode == Gallery_REQUEST_CODE2 && resultCode == RESULT_OK) {
             try {
+                mPhotoFile2=null;
                 mImageFile2 = FileUtil.from(this, data.getData());
                 mImageViewPost2.setImageBitmap(BitmapFactory.decodeFile(mImageFile2.getAbsolutePath()));
             } catch (Exception e) {
@@ -371,8 +405,13 @@ public class PostActivity extends AppCompatActivity {
         }
         if (requestCode==PHOTO_REQUEST_CODE && resultCode== RESULT_OK){
             mImageFile=null;
-            //mPhotoFile= new File(mAbsolutePhotoPatch);
+            mPhotoFile= new File(mAbsolutePhotoPatch);
             Picasso.with(PostActivity.this).load(mPhotoPatch).into(mImageViewPost1);
+        }
+        if (requestCode==PHOTO_REQUEST_CODE2 && resultCode== RESULT_OK){
+            mImageFile2=null;
+            mPhotoFile2= new File(mAbsolutePhotoPatch2);
+            Picasso.with(PostActivity.this).load(mPhotoPatch2).into(mImageViewPost2);
         }
 
     }
