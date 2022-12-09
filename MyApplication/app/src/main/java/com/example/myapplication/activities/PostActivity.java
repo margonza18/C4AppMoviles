@@ -371,7 +371,7 @@ public class PostActivity extends AppCompatActivity {
         }
         if (requestCode==PHOTO_REQUEST_CODE && resultCode== RESULT_OK){
             mImageFile=null;
-            mPhotoFile= new File(mAbsolutePhotoPatch);
+            //mPhotoFile= new File(mAbsolutePhotoPatch);
             Picasso.with(PostActivity.this).load(mPhotoPatch).into(mImageViewPost1);
         }
 
